@@ -505,9 +505,8 @@ function toggle(){
 
     state.start=now;
 
-    if(!state.fixedStart){
-      state.fixedStart=now;
-    }
+    /* 開始するたびに開始時刻を最新へ更新 */
+    state.fixedStart=now;
 
   }else{
 
