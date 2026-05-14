@@ -69,6 +69,11 @@ button{
   color:white;
 }
 
+.deleteBtn{
+  background:#d81b60;
+  color:white;
+}
+
 input,textarea,select{
   width:100%;
   box-sizing:border-box;
@@ -498,6 +503,8 @@ const KEY="ddd_counter_final";
 const PRAY="ddd_prayer_final";
 const STAGE="ddd_stage_final";
 const ACHLOG="ddd_achlog_final";
+const QUIZ_TOKEN_KEY="ddd_quiz_token_final";
+const QUIZ_SEEN_KEY="ddd_quiz_seen_final";
 
 const DB_NAME="daydream_plus_dx_db";
 const DB_VERSION=1;
@@ -557,6 +564,9 @@ let score=0;
 let combo=0;
 let count=0;
 let quizBest=0;
+
+let quizToken="";
+let quizSeen=new Set();
 
 const translateCache={};
 
@@ -683,6 +693,15 @@ function getLocalQuiz(){
   });
 }
 
+function getLocalQuizToken(){
+  return localStorage.getItem(QUIZ_TOKEN_KEY) || "";
+}
+
+function getLocalQuizSeen(){
+  const list=safeJSONParse(localStorage.getItem(QUIZ_SEEN_KEY),[]);
+  return Array.isArray(list) ? list : [];
+}
+
 /* ================= 保存 ================= */
 
 function save(){
@@ -719,6 +738,17 @@ function saveQuizData(){
   });
 }
 
+function saveQuizToken(){
+  localStorage.setItem(QUIZ_TOKEN_KEY,quizToken || "");
+  idbSet("quizToken",quizToken || "");
+}
+
+function saveQuizSeen(){
+  const list=[...quizSeen];
+  localStorage.setItem(QUIZ_SEEN_KEY,JSON.stringify(list));
+  idbSet("quizSeen",list);
+}
+
 /* ================= 起動時ロード ================= */
 
 async function loadAllSavedData(){
@@ -728,6 +758,8 @@ async function loadAllSavedData(){
   const rawIdbPrayer=await idbGet("prayer");
   const rawIdbAchLog=await idbGet("achlog");
   const rawIdbQuiz=await idbGet("quiz");
+  const rawIdbQuizToken=await idbGet("quizToken");
+  const rawIdbQuizSeen=await idbGet("quizSeen");
 
   state=rawIdbState ? normalizeState(rawIdbState) : getLocalState();
   stage=rawIdbStage || getLocalStage();
@@ -739,11 +771,21 @@ async function loadAllSavedData(){
   count=quizData.count;
   quizBest=quizData.best;
 
+  quizToken=typeof rawIdbQuizToken==="string" ? rawIdbQuizToken : getLocalQuizToken();
+
+  const quizSeenList=Array.isArray(rawIdbQuizSeen)
+    ? rawIdbQuizSeen
+    : getLocalQuizSeen();
+
+  quizSeen=new Set(quizSeenList);
+
   if(!rawIdbState) idbSet("state",state);
   if(!rawIdbStage) idbSet("stage",stage);
   if(!rawIdbPrayer) idbSet("prayer",getLocalPrayerList());
   if(!rawIdbAchLog) idbSet("achlog",achLog);
   if(!rawIdbQuiz) idbSet("quiz",quizData);
+  if(typeof rawIdbQuizToken!=="string") idbSet("quizToken",quizToken);
+  if(!Array.isArray(rawIdbQuizSeen)) idbSet("quizSeen",[...quizSeen]);
 
   per.value=state.per || 60;
   goal.value=state.goal || 3000;
@@ -920,17 +962,27 @@ function renderAchievements(){
 
   ach.innerHTML="";
 
-  achLog.forEach(item=>{
+  achLog.forEach((item,i)=>{
     let d=document.createElement("div");
 
     d.className="ach";
     d.innerHTML=`
       ${item.date}<br><br>
-      ${item.text}
+      ${item.text}<br><br>
+      <button class="deleteBtn" onclick="delAch(${i})">この項目を削除</button>
     `;
 
     ach.appendChild(d);
   });
+}
+
+function delAch(i){
+
+  if(!confirm("この段階演出の項目を削除しますか？")) return;
+
+  achLog.splice(i,1);
+  saveAchLog();
+  renderAchievements();
 }
 
 function add(text){
@@ -1218,7 +1270,7 @@ function exportBackup(){
 
   const backupData={
     app:"DayDreamPlusDX",
-    version:2,
+    version:3,
     exportedAt:nowJST(),
     state:state,
     stage:stage,
@@ -1229,7 +1281,9 @@ function exportBackup(){
       combo:combo,
       count:count,
       best:quizBest
-    }
+    },
+    quizToken:quizToken,
+    quizSeen:[...quizSeen]
   };
 
   const blob=new Blob(
@@ -1277,6 +1331,9 @@ async function importBackup(event){
     count=quizData.count;
     quizBest=quizData.best;
 
+    quizToken=typeof data.quizToken==="string" ? data.quizToken : "";
+    quizSeen=new Set(Array.isArray(data.quizSeen) ? data.quizSeen : []);
+
     per.value=state.per || 60;
     goal.value=state.goal || 3000;
 
@@ -1285,6 +1342,8 @@ async function importBackup(event){
     savePrayerList(prayerData);
     saveAchLog();
     saveQuizData();
+    saveQuizToken();
+    saveQuizSeen();
 
     renderAchievements();
     renderPrayer();
@@ -1305,6 +1364,7 @@ async function importBackup(event){
 
 /* ================= クイズDX+ ================= */
 
+/* ネット取得失敗時の緊急フォールバック */
 const japanQuiz = [
 
 {
@@ -1359,6 +1419,170 @@ function decodeHTML(html){
   const txt=document.createElement("textarea");
   txt.innerHTML=html;
   return txt.value;
+}
+
+function normalizeQuestionKey(category,text){
+  return `${category || "random"}::${decodeHTML(text || "")
+    .replace(/\s+/g," ")
+    .trim()
+    .toLowerCase()}`;
+}
+
+function buildQuizApiUrl(category,token){
+  const params=new URLSearchParams();
+
+  params.set("amount","1");
+  params.set("type","multiple");
+
+  if(category){
+    params.set("category",category);
+  }
+
+  if(token){
+    params.set("token",token);
+  }
+
+  return `https://opentdb.com/api.php?${params.toString()}`;
+}
+
+async function fetchQuizToken(forceNew=false){
+
+  if(quizToken && !forceNew){
+    return quizToken;
+  }
+
+  try{
+    const res=await fetch("https://opentdb.com/api_token.php?command=request");
+    const data=await res.json();
+
+    if(data && data.token){
+      quizToken=data.token;
+      saveQuizToken();
+      return quizToken;
+    }
+
+    return "";
+  }catch(e){
+    return "";
+  }
+}
+
+async function resetQuizToken(){
+
+  try{
+
+    if(!quizToken){
+      return await fetchQuizToken(true);
+    }
+
+    const res=await fetch(
+      `https://opentdb.com/api_token.php?command=reset&token=${encodeURIComponent(quizToken)}`
+    );
+
+    const data=await res.json();
+
+    if(data && data.token){
+      quizToken=data.token;
+      saveQuizToken();
+      return quizToken;
+    }
+
+    return await fetchQuizToken(true);
+
+  }catch(e){
+    return await fetchQuizToken(true);
+  }
+}
+
+async function requestUniqueQuiz(category){
+
+  await fetchQuizToken();
+
+  for(let attempt=0; attempt<20; attempt++){
+
+    const url=buildQuizApiUrl(category,quizToken);
+    const res=await fetch(url);
+    const data=await res.json();
+
+    if(data && data.response_code===3){
+      quizToken="";
+      saveQuizToken();
+      await fetchQuizToken(true);
+      continue;
+    }
+
+    if(data && data.response_code===4){
+      await resetQuizToken();
+      continue;
+    }
+
+    if(!data || !data.results || !data.results[0]){
+      continue;
+    }
+
+    const q=data.results[0];
+    const key=normalizeQuestionKey(q.category,q.question);
+
+    if(quizSeen.has(key)){
+      continue;
+    }
+
+    quizSeen.add(key);
+    saveQuizSeen();
+
+    return q;
+  }
+
+  quizSeen=new Set();
+  saveQuizSeen();
+  await resetQuizToken();
+
+  const retryUrl=buildQuizApiUrl(category,quizToken);
+  const retryRes=await fetch(retryUrl);
+  const retryData=await retryRes.json();
+
+  if(!retryData || !retryData.results || !retryData.results[0]){
+    throw new Error("quiz data empty");
+  }
+
+  const q=retryData.results[0];
+  const key=normalizeQuestionKey(q.category,q.question);
+
+  quizSeen.add(key);
+  saveQuizSeen();
+
+  return q;
+}
+
+async function getLocalFallbackQuiz(){
+
+  const unused=japanQuiz.filter(item=>{
+    const key=normalizeQuestionKey("local-japan",item.question);
+    return !quizSeen.has(key);
+  });
+
+  const pool=unused.length ? unused : japanQuiz;
+
+  if(!unused.length){
+    quizSeen=new Set(
+      [...quizSeen].filter(x=>!String(x).startsWith("local-japan::"))
+    );
+    saveQuizSeen();
+  }
+
+  const quiz=pool[Math.floor(Math.random()*pool.length)];
+  const key=normalizeQuestionKey("local-japan",quiz.question);
+
+  quizSeen.add(key);
+  saveQuizSeen();
+
+  return {
+    question:quiz.question,
+    originalQuestion:quiz.question,
+    categoryName:"日本クイズ",
+    choices:shuffle([...quiz.choices]),
+    answer:quiz.answer
+  };
 }
 
 async function translateText(text){
@@ -1427,32 +1651,12 @@ async function loadQuiz(){
 
   try{
 
-    if(Math.random() < 0.5){
-
-      const quiz=japanQuiz[
-        Math.floor(Math.random()*japanQuiz.length)
-      ];
-
-      showJapanQuiz(quiz);
-      return;
-    }
-
-    const url=category
-      ? `https://opentdb.com/api.php?amount=1&type=multiple&category=${category}`
-      : `https://opentdb.com/api.php?amount=1&type=multiple`;
-
-    const res=await fetch(url);
-    const data=await res.json();
-
-    if(!data || !data.results || !data.results[0]){
-      throw new Error("quiz data empty");
-    }
-
-    const q=data.results[0];
+    const q=await requestUniqueQuiz(category);
 
     const originalQuestion=decodeHTML(q.question);
     const originalCorrect=decodeHTML(q.correct_answer);
     const originalIncorrect=q.incorrect_answers.map(x=>decodeHTML(x));
+    const categoryName=decodeHTML(q.category || "ランダム");
 
     const translatedQuestion=await translateText(originalQuestion);
     const translatedCorrect=await translateText(originalCorrect);
@@ -1476,6 +1680,7 @@ async function loadQuiz(){
     const quiz={
       question:translatedQuestion,
       originalQuestion:originalQuestion,
+      categoryName:categoryName,
       choices:choices.map(x=>x.label),
       answer:translatedCorrect
     };
@@ -1484,11 +1689,16 @@ async function loadQuiz(){
 
   }catch(e){
 
-    if(questionEl){
-      questionEl.innerHTML="⚠ クイズ取得失敗";
+    try{
+      const localQuiz=await getLocalFallbackQuiz();
+      showJapanQuiz(localQuiz);
+    }catch(err){
+      if(questionEl){
+        questionEl.innerHTML="⚠ クイズ取得失敗";
+      }
+      console.log(e);
+      console.log(err);
     }
-
-    console.log(e);
   }
 }
 
@@ -1499,7 +1709,10 @@ function showWorldQuiz(quiz){
   if(questionEl){
     questionEl.innerHTML=`
       🌍 ${quiz.question}
-      <div class="originalText">原文: ${quiz.originalQuestion || ""}</div>
+      <div class="originalText">
+        カテゴリ: ${quiz.categoryName || "ランダム"}<br>
+        原文: ${quiz.originalQuestion || ""}
+      </div>
     `;
   }
 
@@ -1514,7 +1727,13 @@ function showJapanQuiz(quiz){
   const questionEl=document.getElementById("question");
 
   if(questionEl){
-    questionEl.innerHTML=`🇯🇵 ${quiz.question}`;
+    questionEl.innerHTML=`
+      🇯🇵 ${quiz.question}
+      <div class="originalText">
+        カテゴリ: ${quiz.categoryName || "日本クイズ"}<br>
+        原文: ${quiz.originalQuestion || ""}
+      </div>
+    `;
   }
 
   createChoices(
@@ -1633,6 +1852,8 @@ window.addEventListener("beforeunload",()=>{
   saveStage();
   saveAchLog();
   saveQuizData();
+  saveQuizToken();
+  saveQuizSeen();
   savePrayerList(getLocalPrayerList());
 });
 
