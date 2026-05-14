@@ -1185,6 +1185,15 @@ function createManifestInline(){
   }
 }
 
+function escapeHtml(str=""){
+  return String(str)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
+}
+
 /* ================= IndexedDB ================= */
 
 function openDB(){
@@ -1280,6 +1289,41 @@ function getLocalQuiz(){
   });
 }
 
+async function getPrayerListSafe(){
+  const localList=getLocalPrayerList();
+
+  if(Array.isArray(localList) && localList.length){
+    return localList;
+  }
+
+  const idbPrayer=await idbGet("prayer");
+
+  if(Array.isArray(idbPrayer) && idbPrayer.length){
+    localStorage.setItem(PRAY,JSON.stringify(idbPrayer));
+    return idbPrayer;
+  }
+
+  return [];
+}
+
+async function getPrayerListForPdf(){
+  const savedList=await getPrayerListSafe();
+  const draftText=(prayer && prayer.value ? prayer.value.trim() : "");
+
+  if(draftText){
+    const draftItem={
+      text:draftText,
+      date:nowJST(),
+      ok:false,
+      draft:true
+    };
+
+    return [draftItem, ...savedList];
+  }
+
+  return savedList;
+}
+
 /* ================= 保存 ================= */
 
 function save(){
@@ -1330,6 +1374,9 @@ async function loadAllSavedData(){
   stage=rawIdbStage || getLocalStage();
   achLog=Array.isArray(rawIdbAchLog) ? rawIdbAchLog : getLocalAchLog();
 
+  const prayerData=Array.isArray(rawIdbPrayer) ? rawIdbPrayer : getLocalPrayerList();
+  localStorage.setItem(PRAY,JSON.stringify(prayerData));
+
   const quizData=rawIdbQuiz ? normalizeQuiz(rawIdbQuiz) : getLocalQuiz();
   score=quizData.score;
   combo=quizData.combo;
@@ -1338,7 +1385,7 @@ async function loadAllSavedData(){
 
   if(!rawIdbState) idbSet("state",state);
   if(!rawIdbStage) idbSet("stage",stage);
-  if(!rawIdbPrayer) idbSet("prayer",getLocalPrayerList());
+  if(!rawIdbPrayer) idbSet("prayer",prayerData);
   if(!rawIdbAchLog) idbSet("achlog",achLog);
   if(!rawIdbQuiz) idbSet("quiz",quizData);
 
@@ -1683,10 +1730,10 @@ function backHome(){
   document.getElementById("main").style.display="block";
 }
 
-function openPrayer(){
+async function openPrayer(){
   hideAll();
   document.getElementById("prayerPage").style.display="block";
-  renderPrayer();
+  await renderPrayer();
 }
 
 function openQuiz(){
@@ -1698,11 +1745,11 @@ function openQuiz(){
 
 /* ================= 御祈念 ================= */
 
-function savePrayer(){
+async function savePrayer(){
 
   if(!prayer.value.trim()) return;
 
-  let list=getLocalPrayerList();
+  let list=await getPrayerListSafe();
 
   list.unshift({
     text:prayer.value,
@@ -1715,9 +1762,9 @@ function savePrayer(){
   renderPrayer();
 }
 
-function renderPrayer(){
+async function renderPrayer(){
 
-  let list=getLocalPrayerList();
+  let list=await getPrayerListSafe();
   prayerList.innerHTML="";
 
   list.forEach((x,i)=>{
@@ -1743,30 +1790,23 @@ function renderPrayer(){
   });
 }
 
-function toggleOk(i){
-  let list=getLocalPrayerList();
+async function toggleOk(i){
+  let list=await getPrayerListSafe();
+  if(!list[i]) return;
   list[i].ok=!list[i].ok;
   savePrayerList(list);
   renderPrayer();
 }
 
-function delPrayer(i){
-  let list=getLocalPrayerList();
+async function delPrayer(i){
+  let list=await getPrayerListSafe();
+  if(!list[i]) return;
   list.splice(i,1);
   savePrayerList(list);
   renderPrayer();
 }
 
 /* ================= 御祈念PDF共有 ================= */
-
-function escapeHtml(str=""){
-  return String(str)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#39;");
-}
 
 function buildPrayerPdfHtml(title,list){
   const exportedAt=nowJST();
@@ -1785,7 +1825,7 @@ function buildPrayerPdfHtml(title,list){
 
       <div class="pdfRow">
         <span class="pdfLabel">状態</span>
-        <span>${item.ok ? "達成" : "未達成"}</span>
+        <span>${item.draft ? "未保存入力" : (item.ok ? "達成" : "未達成")}</span>
       </div>
 
       <div class="pdfTextTitle">御祈念内容</div>
@@ -1865,7 +1905,7 @@ function buildPrayerPdfHtml(title,list){
   }
 
   .pdfLabel{
-    min-width:52px;
+    min-width:70px;
     font-weight:700;
     color:#4338ca;
   }
@@ -1950,8 +1990,8 @@ function openPrayerPdfWindow(html){
   }
 }
 
-function exportPrayerPdfAll(){
-  const list=getLocalPrayerList();
+async function exportPrayerPdfAll(){
+  const list=await getPrayerListForPdf();
 
   if(!list.length){
     alert("PDF化する御祈念がありません。");
@@ -1962,8 +2002,8 @@ function exportPrayerPdfAll(){
   openPrayerPdfWindow(html);
 }
 
-function exportPrayerPdfSingle(index){
-  const list=getLocalPrayerList();
+async function exportPrayerPdfSingle(index){
+  const list=await getPrayerListSafe();
   const item=list[index];
 
   if(!item){
@@ -2064,7 +2104,7 @@ async function importBackup(event){
     applyDisplayMode(localStorage.getItem(VIEW_MODE_KEY) || "normal");
 
     renderAchievements();
-    renderPrayer();
+    await renderPrayer();
     updateQuizUI();
     updateCategoryBadge();
     ui();
@@ -2464,7 +2504,7 @@ async function init(){
   restoreSelectedCategory();
   updateQuizSourceLabel("待機中");
 
-  renderPrayer();
+  await renderPrayer();
   updateQuizUI();
   updateClock();
   setInterval(updateClock,1000);
