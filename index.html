@@ -5,10 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#7c4dff">
 <meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DayDream DX+">
 <meta name="application-name" content="DayDream DX+">
-<meta name="description" content="題目カウンター DayDreamプラス DX+ Android版・らくらくホン版">
-<title>題目カウンター DayDreamプラス DX+ Android版・らくらくホン版</title>
+<meta name="description" content="題目カウンター DayDreamプラス DX+ iPhone完全強化版">
+<title>題目カウンター DayDreamプラス DX+ iPhone完全強化版</title>
 
 <style>
 :root{
@@ -18,12 +21,12 @@
   --safe-right: env(safe-area-inset-right, 0px);
 
   --touch-size: 56px;
-  --touch-size-easy: 76px;
+  --touch-size-easy: 72px;
   --font-normal: 16px;
-  --font-easy: 22px;
+  --font-easy: 21px;
   --radius-mobile: 18px;
   --app-height: 100dvh;
-  --header-bg: rgba(255,255,255,0.55);
+  --header-bg: rgba(255,255,255,0.58);
 }
 
 html{
@@ -36,7 +39,7 @@ html{
 body{
   margin:0;
   min-height:var(--app-height);
-  font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
   background:linear-gradient(135deg,#ffb6f9,#b5d7ff,#ffe59e);
   overflow-x:hidden;
   padding-left:var(--safe-left);
@@ -59,8 +62,8 @@ select{
   min-height:var(--touch-size);
   font-size:16px;
   touch-action:manipulation;
-  appearance:none;
   -webkit-appearance:none;
+  appearance:none;
   border-radius:12px;
 }
 
@@ -94,8 +97,8 @@ textarea{
   font-size:20px;
   font-weight:bold;
   background:var(--header-bg);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
   z-index:999;
   line-height:1.5;
   word-break:break-word;
@@ -226,7 +229,7 @@ textarea{
 }
 
 .noticeBox{
-  background:rgba(255,255,255,0.8);
+  background:rgba(255,255,255,0.75);
   border:1px solid rgba(255,255,255,0.45);
   border-radius:14px;
   padding:12px;
@@ -420,11 +423,11 @@ textarea{
   word-break:break-word;
 }
 
-/* ================= Android向け最適化 ================= */
+/* ================= iPhone向け最適化 ================= */
 
-.android-device input,
-.android-device textarea,
-.android-device select{
+.ios-device input,
+.ios-device textarea,
+.ios-device select{
   font-size:16px !important;
 }
 
@@ -507,13 +510,13 @@ textarea{
   }
 }
 
-/* らくらくホン・見やすさ重視 */
+/* 大きめ表示 */
 body.easy-mode{
   font-size:var(--font-easy);
 }
 
 body.easy-mode .header{
-  font-size:25px;
+  font-size:24px;
   padding:calc(18px + var(--safe-top)) 14px 18px;
 }
 
@@ -557,14 +560,14 @@ body.easy-mode .quizDxQuestion{
 
 body.easy-mode .choice{
   font-size:24px;
-  min-height:82px;
+  min-height:78px;
   padding:18px 16px;
 }
 
 body.easy-mode .quizDxNextBtn,
 body.easy-mode .quizDxBackBtn{
   width:100%;
-  min-height:82px;
+  min-height:78px;
   font-size:24px;
   margin:10px 0 0;
 }
@@ -630,7 +633,7 @@ body.easy-mode .badge{
 <div id="space" class="space"></div>
 
 <div class="header">
-🤖 題目カウンター DayDreamプラス DX+ Android版・らくらくホン版
+🍎 題目カウンター DayDreamプラス DX+ iPhone完全強化版
 </div>
 
 <div id="main">
@@ -645,7 +648,7 @@ body.easy-mode .badge{
 
     <div class="badgeRow">
       <div id="networkBadge" class="badge online">🟢 オンライン</div>
-      <div id="installBadge" class="badge">📲 Androidホーム追加対応</div>
+      <div id="installBadge" class="badge">📲 ホーム画面追加対応</div>
       <div id="categoryBadge" class="badge">🧠 ジャンル: ランダム</div>
     </div>
   </div>
@@ -677,43 +680,29 @@ body.easy-mode .badge{
     <h3>📱 表示モード</h3>
 
     <select id="displayMode" onchange="changeDisplayMode()">
-      <option value="normal">Android標準</option>
-      <option value="easy">らくらくホン大きめ表示</option>
+      <option value="normal">iPhone標準</option>
+      <option value="easy">らくらく大きめ表示</option>
     </select>
 
     <div class="storageInfo">
-      ・Androidスマホは「Android標準」で使えます<br>
-      ・見やすさ優先なら「らくらくホン大きめ表示」<br>
+      ・iPhoneは「iPhone標準」でそのまま使えます<br>
+      ・見やすさ優先なら「らくらく大きめ表示」<br>
       ・設定は端末内に保存されます
     </div>
   </div>
 
   <div class="card">
-    <h3>📲 Androidでホーム画面に追加</h3>
+    <h3>📲 iPhoneでホーム画面に追加</h3>
     <div class="noticeBox">
       <ol class="installSteps">
-        <li>Chromeでこのページを開く</li>
-        <li>右上の「︙」を押す</li>
-        <li>「ホーム画面に追加」または「インストール」を選ぶ</li>
-        <li>追加するとアプリ風に起動しやすくなります</li>
+        <li>Safariでこのページを開く</li>
+        <li>画面下の共有ボタンを押す</li>
+        <li>「ホーム画面に追加」を選ぶ</li>
+        <li>追加するとアプリ風に開きやすくなります</li>
       </ol>
       <div class="smallMuted">
-        ※ AndroidではChromeから追加するのが安定です
+        ※ iPhoneではSafariから追加するのが一番安定です
       </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>💾 記録保護</h3>
-
-    <button class="backupBtn" onclick="exportBackup()">バックアップ保存</button>
-    <button class="backupBtn" onclick="triggerImportBackup()">バックアップ復元</button>
-    <input id="backupFile" type="file" accept=".json,application/json" style="display:none" onchange="importBackup(event)">
-
-    <div class="storageInfo">
-      ・記録は localStorage と IndexedDB に二重保存<br>
-      ・同じブラウザ / 同じURL系統なら残りやすいです<br>
-      ・端末変更やブラウザ整理に備えて、たまにバックアップ保存がおすすめです
     </div>
   </div>
 
@@ -732,7 +721,6 @@ body.easy-mode .badge{
     <textarea id="prayer"></textarea>
 
     <button class="startBtn" onclick="savePrayer()">保存</button>
-    <button class="backupBtn" onclick="exportPrayerPdfAll()">一覧をPDF共有</button>
     <button class="navBtn" onclick="backHome()">戻る</button>
 
     <div id="prayerList"></div>
@@ -1132,11 +1120,14 @@ function handleCategoryChange(){
   loadQuiz();
 }
 
-function detectAndroidDevice(){
-  const ua = navigator.userAgent || "";
-  const isAndroid = /Android/i.test(ua);
-  document.documentElement.classList.toggle("android-device", isAndroid);
-  document.body.classList.toggle("android-device", isAndroid);
+function detectIOSDevice(){
+  const ua = window.navigator.userAgent;
+  const isIOS =
+    /iPhone|iPad|iPod/.test(ua) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  document.documentElement.classList.toggle("ios-device", isIOS);
+  document.body.classList.toggle("ios-device", isIOS);
 }
 
 function setViewportHeight(){
@@ -1183,15 +1174,6 @@ function createManifestInline(){
   }catch(e){
     console.log("manifest create skipped",e);
   }
-}
-
-function escapeHtml(str=""){
-  return String(str)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#39;");
 }
 
 /* ================= IndexedDB ================= */
@@ -1289,41 +1271,6 @@ function getLocalQuiz(){
   });
 }
 
-async function getPrayerListSafe(){
-  const localList=getLocalPrayerList();
-
-  if(Array.isArray(localList) && localList.length){
-    return localList;
-  }
-
-  const idbPrayer=await idbGet("prayer");
-
-  if(Array.isArray(idbPrayer) && idbPrayer.length){
-    localStorage.setItem(PRAY,JSON.stringify(idbPrayer));
-    return idbPrayer;
-  }
-
-  return [];
-}
-
-async function getPrayerListForPdf(){
-  const savedList=await getPrayerListSafe();
-  const draftText=(prayer && prayer.value ? prayer.value.trim() : "");
-
-  if(draftText){
-    const draftItem={
-      text:draftText,
-      date:nowJST(),
-      ok:false,
-      draft:true
-    };
-
-    return [draftItem, ...savedList];
-  }
-
-  return savedList;
-}
-
 /* ================= 保存 ================= */
 
 function save(){
@@ -1374,9 +1321,6 @@ async function loadAllSavedData(){
   stage=rawIdbStage || getLocalStage();
   achLog=Array.isArray(rawIdbAchLog) ? rawIdbAchLog : getLocalAchLog();
 
-  const prayerData=Array.isArray(rawIdbPrayer) ? rawIdbPrayer : getLocalPrayerList();
-  localStorage.setItem(PRAY,JSON.stringify(prayerData));
-
   const quizData=rawIdbQuiz ? normalizeQuiz(rawIdbQuiz) : getLocalQuiz();
   score=quizData.score;
   combo=quizData.combo;
@@ -1385,7 +1329,7 @@ async function loadAllSavedData(){
 
   if(!rawIdbState) idbSet("state",state);
   if(!rawIdbStage) idbSet("stage",stage);
-  if(!rawIdbPrayer) idbSet("prayer",prayerData);
+  if(!rawIdbPrayer) idbSet("prayer",getLocalPrayerList());
   if(!rawIdbAchLog) idbSet("achlog",achLog);
   if(!rawIdbQuiz) idbSet("quiz",quizData);
 
@@ -1730,10 +1674,10 @@ function backHome(){
   document.getElementById("main").style.display="block";
 }
 
-async function openPrayer(){
+function openPrayer(){
   hideAll();
   document.getElementById("prayerPage").style.display="block";
-  await renderPrayer();
+  renderPrayer();
 }
 
 function openQuiz(){
@@ -1745,11 +1689,11 @@ function openQuiz(){
 
 /* ================= 御祈念 ================= */
 
-async function savePrayer(){
+function savePrayer(){
 
   if(!prayer.value.trim()) return;
 
-  let list=await getPrayerListSafe();
+  let list=getLocalPrayerList();
 
   list.unshift({
     text:prayer.value,
@@ -1762,9 +1706,9 @@ async function savePrayer(){
   renderPrayer();
 }
 
-async function renderPrayer(){
+function renderPrayer(){
 
-  let list=await getPrayerListSafe();
+  let list=getLocalPrayerList();
   prayerList.innerHTML="";
 
   list.forEach((x,i)=>{
@@ -1772,14 +1716,10 @@ async function renderPrayer(){
     d.className="ach";
     d.innerHTML=`
       ${x.date}<br>
-      🙏 ${escapeHtml(x.text).replace(/\n/g,"<br>")}<br><br>
+      🙏 ${x.text}<br><br>
 
       <button onclick="toggleOk(${i})">
         ${x.ok ? "⭕達成" : "⭕未達成"}
-      </button>
-
-      <button class="backupBtn" onclick="exportPrayerPdfSingle(${i})">
-        PDF共有
       </button>
 
       <button onclick="delPrayer(${i})">
@@ -1790,229 +1730,18 @@ async function renderPrayer(){
   });
 }
 
-async function toggleOk(i){
-  let list=await getPrayerListSafe();
-  if(!list[i]) return;
+function toggleOk(i){
+  let list=getLocalPrayerList();
   list[i].ok=!list[i].ok;
   savePrayerList(list);
   renderPrayer();
 }
 
-async function delPrayer(i){
-  let list=await getPrayerListSafe();
-  if(!list[i]) return;
+function delPrayer(i){
+  let list=getLocalPrayerList();
   list.splice(i,1);
   savePrayerList(list);
   renderPrayer();
-}
-
-/* ================= 御祈念PDF共有 ================= */
-
-function buildPrayerPdfHtml(title,list){
-  const exportedAt=nowJST();
-
-  const itemsHtml=list.map((item,index)=>`
-    <div class="pdfItem">
-      <div class="pdfRow">
-        <span class="pdfLabel">No.</span>
-        <span>${index+1}</span>
-      </div>
-
-      <div class="pdfRow">
-        <span class="pdfLabel">日時</span>
-        <span>${escapeHtml(item.date || "")}</span>
-      </div>
-
-      <div class="pdfRow">
-        <span class="pdfLabel">状態</span>
-        <span>${item.draft ? "未保存入力" : (item.ok ? "達成" : "未達成")}</span>
-      </div>
-
-      <div class="pdfTextTitle">御祈念内容</div>
-      <div class="pdfText">${escapeHtml(item.text || "")}</div>
-    </div>
-  `).join("");
-
-  return `
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${escapeHtml(title)}</title>
-<style>
-  @page{
-    size:A4;
-    margin:14mm;
-  }
-
-  html,body{
-    margin:0;
-    padding:0;
-    background:#ffffff;
-    color:#111827;
-  }
-
-  body{
-    font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
-    -webkit-font-smoothing:antialiased;
-    text-rendering:optimizeLegibility;
-    -webkit-print-color-adjust:exact;
-    print-color-adjust:exact;
-  }
-
-  .pdfWrap{
-    width:100%;
-  }
-
-  .pdfHeader{
-    border-bottom:3px solid #7c4dff;
-    padding-bottom:12px;
-    margin-bottom:18px;
-  }
-
-  .pdfTitle{
-    font-size:24px;
-    font-weight:700;
-    margin:0 0 8px;
-    color:#4c1d95;
-    line-height:1.4;
-  }
-
-  .pdfMeta{
-    font-size:12px;
-    color:#4b5563;
-    line-height:1.8;
-  }
-
-  .pdfItem{
-    border:1px solid #d1d5db;
-    border-radius:14px;
-    padding:14px;
-    margin-bottom:14px;
-    page-break-inside:avoid;
-    break-inside:avoid;
-    background:#fafafa;
-  }
-
-  .pdfRow{
-    display:flex;
-    gap:10px;
-    align-items:flex-start;
-    margin-bottom:8px;
-    line-height:1.8;
-    font-size:13px;
-  }
-
-  .pdfLabel{
-    min-width:70px;
-    font-weight:700;
-    color:#4338ca;
-  }
-
-  .pdfTextTitle{
-    margin-top:10px;
-    margin-bottom:8px;
-    font-weight:700;
-    color:#4338ca;
-  }
-
-  .pdfText{
-    white-space:pre-wrap;
-    word-break:break-word;
-    line-height:1.9;
-    font-size:15px;
-    background:#ffffff;
-    border-radius:10px;
-    padding:12px;
-    border:1px solid #e5e7eb;
-  }
-
-  .pdfFooter{
-    margin-top:20px;
-    font-size:11px;
-    color:#6b7280;
-    text-align:center;
-    line-height:1.8;
-  }
-
-  @media print{
-    .pdfItem{
-      box-shadow:none;
-    }
-  }
-</style>
-</head>
-<body>
-  <div class="pdfWrap">
-    <div class="pdfHeader">
-      <h1 class="pdfTitle">${escapeHtml(title)}</h1>
-      <div class="pdfMeta">
-        出力日時: ${escapeHtml(exportedAt)}<br>
-        アプリ: DayDreamプラス DX+ 御祈念版
-      </div>
-    </div>
-
-    ${itemsHtml}
-
-    <div class="pdfFooter">
-      DayDreamプラス DX+ / 御祈念PDF
-    </div>
-  </div>
-</body>
-</html>
-  `;
-}
-
-function openPrayerPdfWindow(html){
-  const win=window.open("","_blank","noopener,noreferrer");
-
-  if(!win){
-    alert("ポップアップがブロックされました。Chromeのポップアップ設定をご確認ください。");
-    return;
-  }
-
-  win.document.open();
-  win.document.write(html);
-  win.document.close();
-
-  const runPrint=()=>{
-    setTimeout(()=>{
-      win.focus();
-      win.print();
-    },500);
-  };
-
-  if(win.document.readyState==="complete"){
-    runPrint();
-  }else{
-    win.onload=runPrint;
-  }
-}
-
-async function exportPrayerPdfAll(){
-  const list=await getPrayerListForPdf();
-
-  if(!list.length){
-    alert("PDF化する御祈念がありません。");
-    return;
-  }
-
-  const html=buildPrayerPdfHtml("御祈念一覧",list);
-  openPrayerPdfWindow(html);
-}
-
-async function exportPrayerPdfSingle(index){
-  const list=await getPrayerListSafe();
-  const item=list[index];
-
-  if(!item){
-    alert("対象データが見つかりません。");
-    return;
-  }
-
-  const html=buildPrayerPdfHtml("御祈念", [item]);
-  openPrayerPdfWindow(html);
 }
 
 /* ================= バックアップ ================= */
@@ -2104,7 +1833,7 @@ async function importBackup(event){
     applyDisplayMode(localStorage.getItem(VIEW_MODE_KEY) || "normal");
 
     renderAchievements();
-    await renderPrayer();
+    renderPrayer();
     updateQuizUI();
     updateCategoryBadge();
     ui();
@@ -2491,7 +2220,7 @@ document.addEventListener("visibilitychange",()=>{
 /* ================= 初期化 ================= */
 
 async function init(){
-  detectAndroidDevice();
+  detectIOSDevice();
   setViewportHeight();
   updateNetworkUI();
   createManifestInline();
@@ -2504,7 +2233,7 @@ async function init(){
   restoreSelectedCategory();
   updateQuizSourceLabel("待機中");
 
-  await renderPrayer();
+  renderPrayer();
   updateQuizUI();
   updateClock();
   setInterval(updateClock,1000);
