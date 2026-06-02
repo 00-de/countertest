@@ -3,12 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#2e7dff">
+<meta name="theme-color" content="#7c4dff">
 <meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="DayDream DX+ Android">
-<meta name="description" content="題目カウンター DayDreamプラス DX+ Android・らくらくホン対応版">
-<title>題目カウンター DayDreamプラス DX+ Android・らくらくホン対応版</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DayDream DX+">
+<meta name="application-name" content="DayDream DX+">
+<meta name="description" content="題目カウンター DayDreamプラス DX+ iPhone完全強化版">
+<title>題目カウンター DayDreamプラス DX+ iPhone完全強化版</title>
 
 <style>
 :root{
@@ -17,13 +20,13 @@
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 
-  --touch-size: 60px;
-  --touch-size-easy: 84px;
-  --font-normal: 17px;
-  --font-easy: 24px;
-  --radius-mobile: 20px;
+  --touch-size: 56px;
+  --touch-size-easy: 72px;
+  --font-normal: 16px;
+  --font-easy: 21px;
+  --radius-mobile: 18px;
   --app-height: 100dvh;
-  --header-bg: rgba(255,255,255,0.72);
+  --header-bg: rgba(255,255,255,0.58);
 }
 
 html{
@@ -37,7 +40,7 @@ body{
   margin:0;
   min-height:var(--app-height);
   font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
-  background:linear-gradient(135deg,#ffd1f5,#c8e2ff,#fff0ae);
+  background:linear-gradient(135deg,#ffb6f9,#b5d7ff,#ffe59e);
   overflow-x:hidden;
   padding-left:var(--safe-left);
   padding-right:var(--safe-right);
@@ -45,7 +48,6 @@ body{
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
   overscroll-behavior-y:none;
-  font-size:var(--font-normal);
 }
 
 *{
@@ -58,11 +60,11 @@ input,
 textarea,
 select{
   min-height:var(--touch-size);
-  font-size:17px;
+  font-size:16px;
   touch-action:manipulation;
   -webkit-appearance:none;
   appearance:none;
-  border-radius:14px;
+  border-radius:12px;
 }
 
 button{
@@ -75,7 +77,7 @@ button{
 
 input,textarea,select{
   width:100%;
-  padding:12px 14px;
+  padding:10px 12px;
   margin-top:8px;
   border:1px solid #ccc;
   background:#fff;
@@ -83,7 +85,7 @@ input,textarea,select{
 }
 
 textarea{
-  min-height:140px;
+  min-height:120px;
   resize:vertical;
 }
 
@@ -92,7 +94,7 @@ textarea{
   top:0;
   padding:calc(14px + var(--safe-top)) 14px 14px;
   text-align:center;
-  font-size:21px;
+  font-size:20px;
   font-weight:bold;
   background:var(--header-bg);
   backdrop-filter:blur(12px);
@@ -106,21 +108,22 @@ textarea{
 .card{
   background:white;
   margin:12px;
-  padding:16px;
-  border-radius:18px;
+  padding:14px;
+  border-radius:16px;
   box-shadow:0 6px 14px rgba(0,0,0,0.15);
   overflow:hidden;
 }
 
 .startBtn{ background:#00c853; color:white; }
 .resetBtn{ background:#ff7043; color:white; }
-.navBtn{ background:#5e35b1; color:white; }
+.navBtn{ background:#7c4dff; color:white; }
 .quizBtn{ background:#00acc1; color:white; }
 .backupBtn{ background:#3949ab; color:white; }
 .subBtn{ background:#607d8b; color:white; }
+.addBtn{ background:#ec407a; color:white; }
 
 .bar{
-  height:20px;
+  height:18px;
   background:#ddd;
   border-radius:999px;
   overflow:hidden;
@@ -193,8 +196,8 @@ textarea{
 }
 
 .storageInfo{
-  font-size:14px;
-  line-height:1.9;
+  font-size:13px;
+  line-height:1.8;
   color:#333;
 }
 
@@ -227,7 +230,7 @@ textarea{
 }
 
 .noticeBox{
-  background:rgba(255,255,255,0.82);
+  background:rgba(255,255,255,0.75);
   border:1px solid rgba(255,255,255,0.45);
   border-radius:14px;
   padding:12px;
@@ -237,22 +240,32 @@ textarea{
 .installSteps{
   margin:0;
   padding-left:20px;
-  line-height:1.95;
+  line-height:1.9;
 }
 
 .smallMuted{
   font-size:12px;
-  opacity:0.82;
-  line-height:1.8;
+  opacity:0.8;
+  line-height:1.7;
 }
 
-.androidNotice{
-  margin-top:10px;
-  padding:10px 12px;
-  border-radius:12px;
-  background:#eef6ff;
-  line-height:1.8;
-  font-size:14px;
+.manualBtnRow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.quickAddRow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:6px;
+}
+
+.quickAddRow button{
+  flex:1;
+  min-width:72px;
+  margin:0;
 }
 
 /* ================= クイズDX+ ================= */
@@ -333,7 +346,7 @@ textarea{
   background:white;
   color:#222;
   font-weight:bold;
-  min-height:64px;
+  min-height:60px;
 }
 
 .choice:hover{
@@ -373,7 +386,7 @@ textarea{
   cursor:pointer;
   font-weight:bold;
   margin-top:15px;
-  min-height:64px;
+  min-height:60px;
 }
 
 .quizDxNextBtn{
@@ -430,34 +443,26 @@ textarea{
   word-break:break-word;
 }
 
-/* ================= Android向け最適化 ================= */
+/* ================= iPhone向け最適化 ================= */
 
-.android-device input,
-.android-device textarea,
-.android-device select{
-  font-size:17px !important;
+.ios-device input,
+.ios-device textarea,
+.ios-device select{
+  font-size:16px !important;
 }
 
-.android-device #main .card button,
-.android-device #prayerPage .card button{
-  min-height:60px;
-}
-
-.raku-device .card{
-  border-radius:22px;
-}
-
-.raku-device .header{
-  font-size:22px;
+#main .card button,
+#prayerPage .card button{
+  min-height:56px;
 }
 
 @media (max-width: 768px){
   body{
-    font-size:17px;
+    font-size:16px;
   }
 
   .header{
-    font-size:19px;
+    font-size:18px;
     padding:calc(16px + var(--safe-top)) 12px 16px;
   }
 
@@ -472,7 +477,13 @@ textarea{
     display:block;
     width:100%;
     margin:6px 0;
-    font-size:17px;
+    font-size:16px;
+  }
+
+  #main .quickAddRow button{
+    display:inline-block;
+    width:auto;
+    margin:0;
   }
 
   .quizDxContainer{
@@ -521,23 +532,23 @@ textarea{
 
   .storageInfo{
     font-size:14px;
-    line-height:1.95;
+    line-height:1.9;
   }
 }
 
-/* らくらく大きめ表示 */
+/* 大きめ表示 */
 body.easy-mode{
   font-size:var(--font-easy);
 }
 
 body.easy-mode .header{
-  font-size:26px;
+  font-size:24px;
   padding:calc(18px + var(--safe-top)) 14px 18px;
 }
 
 body.easy-mode .card{
-  padding:20px;
-  border-radius:24px;
+  padding:18px;
+  border-radius:22px;
 }
 
 body.easy-mode button,
@@ -545,7 +556,7 @@ body.easy-mode input,
 body.easy-mode textarea,
 body.easy-mode select{
   min-height:var(--touch-size-easy);
-  font-size:24px;
+  font-size:22px;
 }
 
 body.easy-mode #main .card button,
@@ -555,35 +566,41 @@ body.easy-mode #prayerPage .card button{
   margin:8px 0;
 }
 
+body.easy-mode #main .quickAddRow button{
+  display:inline-block;
+  width:auto;
+  margin:0;
+}
+
 body.easy-mode .quizDxTitle{
-  font-size:44px;
+  font-size:42px;
 }
 
 body.easy-mode .quizDxSub{
-  font-size:21px;
+  font-size:20px;
 }
 
 body.easy-mode .quizCurrentGenre{
-  font-size:20px;
-  line-height:1.95;
+  font-size:19px;
+  line-height:1.9;
 }
 
 body.easy-mode .quizDxQuestion{
-  font-size:34px;
-  line-height:1.8;
+  font-size:32px;
+  line-height:1.75;
 }
 
 body.easy-mode .choice{
-  font-size:25px;
-  min-height:84px;
+  font-size:24px;
+  min-height:78px;
   padding:18px 16px;
 }
 
 body.easy-mode .quizDxNextBtn,
 body.easy-mode .quizDxBackBtn{
   width:100%;
-  min-height:84px;
-  font-size:25px;
+  min-height:78px;
+  font-size:24px;
   margin:10px 0 0;
 }
 
@@ -592,17 +609,17 @@ body.easy-mode .quizDxScoreBox{
 }
 
 body.easy-mode .quizDxScoreItem{
-  font-size:23px;
+  font-size:22px;
 }
 
 body.easy-mode .storageInfo{
-  font-size:19px;
-  line-height:2.05;
+  font-size:18px;
+  line-height:2;
 }
 
 body.easy-mode .originalText{
   font-size:16px;
-  line-height:1.9;
+  line-height:1.8;
 }
 
 body.easy-mode .badge{
@@ -610,14 +627,9 @@ body.easy-mode .badge{
   padding:10px 14px;
 }
 
-body.easy-mode .androidNotice{
-  font-size:19px;
-  line-height:2;
-}
-
 @media (max-width: 420px){
   .header{
-    font-size:18px;
+    font-size:17px;
   }
 
   .quizDxTitle{
@@ -653,7 +665,7 @@ body.easy-mode .androidNotice{
 <div id="space" class="space"></div>
 
 <div class="header">
-🤖 題目カウンター DayDreamプラス DX+ Android・らくらくホン対応版
+🍎 題目カウンター DayDreamプラス DX+ iPhone完全強化版
 </div>
 
 <div id="main">
@@ -668,7 +680,7 @@ body.easy-mode .androidNotice{
 
     <div class="badgeRow">
       <div id="networkBadge" class="badge online">🟢 オンライン</div>
-      <div id="installBadge" class="badge">🤖 Androidホーム追加対応</div>
+      <div id="installBadge" class="badge">📲 ホーム画面追加対応</div>
       <div id="categoryBadge" class="badge">🧠 ジャンル: ランダム</div>
     </div>
   </div>
@@ -680,6 +692,32 @@ body.easy-mode .androidNotice{
     <button class="resetBtn" onclick="resetTotal()">総リセット</button>
     <button class="navBtn" onclick="openPrayer()">🙏 御祈念</button>
     <button class="quizBtn" onclick="openQuiz()">🧠 クイズ</button>
+  </div>
+
+  <div class="card">
+    <h3>✍️ 今日あげた題目数を入力</h3>
+
+    今日あげた題目数（手入力）
+    <input id="manualCount" type="number" inputmode="numeric" pattern="[0-9]*" min="0" placeholder="例: 500">
+
+    <div class="manualBtnRow">
+      <button class="addBtn" onclick="addManualCount()">➕ 今日の数に加算</button>
+      <button class="subBtn" onclick="setTodayCount()">📝 今日の数に設定</button>
+    </div>
+
+    <div class="quickAddRow">
+      <button class="navBtn" onclick="quickAdd(100)">+100</button>
+      <button class="navBtn" onclick="quickAdd(500)">+500</button>
+      <button class="navBtn" onclick="quickAdd(1000)">+1000</button>
+      <button class="navBtn" onclick="quickAdd(3000)">+3000</button>
+    </div>
+
+    <div class="storageInfo">
+      ・タイマー以外であげた題目数を手入力できます<br>
+      ・「加算」… 入力した数を 日 / 月 / 総 すべてに足します<br>
+      ・「設定」… 今日(日)の数だけを入力した数に置き換えます<br>
+      ・自動カウント中でもそのまま使えます
+    </div>
   </div>
 
   <div class="card">
@@ -700,32 +738,28 @@ body.easy-mode .androidNotice{
     <h3>📱 表示モード</h3>
 
     <select id="displayMode" onchange="changeDisplayMode()">
-      <option value="normal">Android標準</option>
-      <option value="easy">らくらくホン大きめ表示</option>
+      <option value="normal">iPhone標準</option>
+      <option value="easy">らくらく大きめ表示</option>
     </select>
 
     <div class="storageInfo">
-      ・Androidスマホは「Android標準」でそのまま使えます<br>
-      ・見やすさ優先なら「らくらくホン大きめ表示」がおすすめです<br>
+      ・iPhoneは「iPhone標準」でそのまま使えます<br>
+      ・見やすさ優先なら「らくらく大きめ表示」<br>
       ・設定は端末内に保存されます
     </div>
   </div>
 
   <div class="card">
-    <h3>📲 Android・らくらくホンでホーム画面に追加</h3>
+    <h3>📲 iPhoneでホーム画面に追加</h3>
     <div class="noticeBox">
       <ol class="installSteps">
-        <li>Chrome などでこのページを開く</li>
-        <li>画面右上の「︙」メニューを押す</li>
-        <li>「ホーム画面に追加」または「アプリをインストール」を選ぶ</li>
+        <li>Safariでこのページを開く</li>
+        <li>画面下の共有ボタンを押す</li>
+        <li>「ホーム画面に追加」を選ぶ</li>
         <li>追加するとアプリ風に開きやすくなります</li>
       </ol>
-      <div class="androidNotice">
-        ・らくらくホン系の小さめ画面では「らくらくホン大きめ表示」推奨<br>
-        ・機種によってはメニュー名が少し違う場合があります
-      </div>
       <div class="smallMuted">
-        ※ Androidでは Chrome 系ブラウザから追加するのが比較的安定です
+        ※ iPhoneではSafariから追加するのが一番安定です
       </div>
     </div>
   </div>
@@ -736,9 +770,6 @@ body.easy-mode .androidNotice{
   </div>
 
 </div>
-
-<!-- 非表示: 互換維持用 -->
-<input id="backupFile" type="file" accept=".json,application/json" style="display:none" onchange="importBackup(event)">
 
 <!-- 御祈念 -->
 <div id="prayerPage" style="display:none">
@@ -889,7 +920,8 @@ const categorySelect=document.getElementById("category");
 const quizCurrentGenre=document.getElementById("quizCurrentGenre");
 const networkBadge=document.getElementById("networkBadge");
 const categoryBadge=document.getElementById("categoryBadge");
-const installBadge=document.getElementById("installBadge");
+
+const manualCount=document.getElementById("manualCount");
 
 /* ================= 状態 ================= */
 
@@ -1148,35 +1180,14 @@ function handleCategoryChange(){
   loadQuiz();
 }
 
-function detectAndroidDevice(){
-  const ua = window.navigator.userAgent || "";
-  const isAndroid = /Android/i.test(ua);
-  const isSmallTouch = window.matchMedia("(pointer: coarse)").matches && window.innerWidth <= 480;
-  const isRakuLikely = isAndroid && isSmallTouch;
+function detectIOSDevice(){
+  const ua = window.navigator.userAgent;
+  const isIOS =
+    /iPhone|iPad|iPod/.test(ua) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
-  document.documentElement.classList.toggle("android-device", isAndroid);
-  document.body.classList.toggle("android-device", isAndroid);
-
-  document.documentElement.classList.toggle("raku-device", isRakuLikely);
-  document.body.classList.toggle("raku-device", isRakuLikely);
-
-  if(installBadge){
-    installBadge.textContent = isAndroid ? "🤖 Androidホーム追加対応" : "📲 ホーム画面追加対応";
-  }
-}
-
-function suggestDefaultDisplayMode(){
-  const savedMode = localStorage.getItem(VIEW_MODE_KEY);
-  if(savedMode){
-    applyDisplayMode(savedMode);
-    return;
-  }
-
-  const easyRecommended =
-    document.body.classList.contains("raku-device") ||
-    (document.body.classList.contains("android-device") && window.innerWidth <= 480);
-
-  applyDisplayMode(easyRecommended ? "easy" : "normal");
+  document.documentElement.classList.toggle("ios-device", isIOS);
+  document.body.classList.toggle("ios-device", isIOS);
 }
 
 function setViewportHeight(){
@@ -1201,11 +1212,11 @@ function updateNetworkUI(){
 function createManifestInline(){
   try{
     const manifest={
-      name:"DayDreamプラス DX+ Android",
+      name:"DayDreamプラス DX+",
       short_name:"DayDream DX+",
       display:"standalone",
       background_color:"#ffffff",
-      theme_color:"#2e7dff",
+      theme_color:"#7c4dff",
       start_url:".",
       icons:[]
     };
@@ -1473,6 +1484,101 @@ function updateGoalSetting(){
   state.goal=Number(goal.value || 3000);
   save();
   ui();
+}
+
+/* ================= 今日あげた題目数の手動入力 ================= */
+
+/*
+  自動カウント中は、まず現在の実値を確定（バンク）してから
+  操作するため、タイマー中でもズレなく加算・設定できます。
+*/
+function bankRunningCount(){
+  if(state.running){
+    const c=get();
+    state.daily=c.daily;
+    state.monthly=c.monthly;
+    state.total=c.total;
+    state.start=Date.now();
+  }
+}
+
+/* 入力した数を 日・月・総 すべてに加算 */
+function addManualCount(){
+
+  if(!manualCount) return;
+
+  const value=Math.floor(Number(manualCount.value));
+
+  if(!isFinite(value) || value<=0){
+    alert("1以上の数を入力してください");
+    return;
+  }
+
+  bankRunningCount();
+
+  state.daily += value;
+  state.monthly += value;
+  state.total += value;
+
+  save();
+  ui();
+
+  manualCount.value="";
+
+  add(`✍️ 手動で ${value} 題目を加算しました`);
+}
+
+/* +ボタン用：固定数をその場で加算 */
+function quickAdd(value){
+
+  const num=Math.floor(Number(value));
+  if(!isFinite(num) || num<=0) return;
+
+  bankRunningCount();
+
+  state.daily += num;
+  state.monthly += num;
+  state.total += num;
+
+  save();
+  ui();
+
+  add(`✍️ 手動で ${num} 題目を加算しました`);
+}
+
+/*
+  今日(日)の数だけを入力した数に置き換える。
+  日との差分を 月・総 にも反映して整合を保ちます。
+*/
+function setTodayCount(){
+
+  if(!manualCount) return;
+
+  const value=Math.floor(Number(manualCount.value));
+
+  if(!isFinite(value) || value<0){
+    alert("0以上の数を入力してください");
+    return;
+  }
+
+  bankRunningCount();
+
+  const diff = value - state.daily;
+
+  state.daily = value;
+  state.monthly = Math.max(0, state.monthly + diff);
+  state.total = Math.max(0, state.total + diff);
+
+  if(value < Number(goal.value || state.goal || 1)){
+    state.done=false;
+  }
+
+  save();
+  ui();
+
+  manualCount.value="";
+
+  add(`📝 今日の数を ${value} 題目に設定しました`);
 }
 
 /* ================= 開始停止 ================= */
@@ -1793,7 +1899,7 @@ function delPrayer(i){
   renderPrayer();
 }
 
-/* ================= バックアップ互換 ================= */
+/* ================= バックアップ ================= */
 
 function exportBackup(){
 
@@ -1838,10 +1944,7 @@ function exportBackup(){
 }
 
 function triggerImportBackup(){
-  const backupInput=document.getElementById("backupFile");
-  if(backupInput){
-    backupInput.click();
-  }
+  document.getElementById("backupFile").click();
 }
 
 async function importBackup(event){
@@ -1882,7 +1985,7 @@ async function importBackup(event){
     saveQuizData();
 
     restoreSelectedCategory();
-    suggestDefaultDisplayMode();
+    applyDisplayMode(localStorage.getItem(VIEW_MODE_KEY) || "normal");
 
     renderAchievements();
     renderPrayer();
@@ -2174,10 +2277,6 @@ function checkAnswer(button,choice){
       quizBest=combo;
     }
 
-    if(navigator.vibrate){
-      navigator.vibrate(35);
-    }
-
     if(resultEl){
       resultEl.innerText="🎉 正解！！";
     }
@@ -2203,10 +2302,6 @@ function checkAnswer(button,choice){
 
     button.classList.add("wrong");
     combo=0;
-
-    if(navigator.vibrate){
-      navigator.vibrate([40,40,40]);
-    }
 
     if(resultEl){
       resultEl.innerText="❌ 不正解";
@@ -2237,22 +2332,10 @@ function generateQuiz(){
 per.addEventListener("change",updatePerSetting);
 goal.addEventListener("change",updateGoalSetting);
 
-window.addEventListener("resize",()=>{
-  setViewportHeight();
-  detectAndroidDevice();
-  suggestDefaultDisplayMode();
-});
-
-window.addEventListener("orientationchange",()=>{
-  setViewportHeight();
-  detectAndroidDevice();
-  suggestDefaultDisplayMode();
-});
-
+window.addEventListener("resize",setViewportHeight);
+window.addEventListener("orientationchange",setViewportHeight);
 window.addEventListener("pageshow",()=>{
   setViewportHeight();
-  detectAndroidDevice();
-  suggestDefaultDisplayMode();
   updateNetworkUI();
   ui();
 });
@@ -2284,8 +2367,6 @@ document.addEventListener("visibilitychange",()=>{
     saveSelectedCategory();
   }else{
     setViewportHeight();
-    detectAndroidDevice();
-    suggestDefaultDisplayMode();
     updateNetworkUI();
     ui();
   }
@@ -2294,14 +2375,16 @@ document.addEventListener("visibilitychange",()=>{
 /* ================= 初期化 ================= */
 
 async function init(){
-  detectAndroidDevice();
+  detectIOSDevice();
   setViewportHeight();
   updateNetworkUI();
   createManifestInline();
 
   await loadAllSavedData();
 
-  suggestDefaultDisplayMode();
+  const savedMode = localStorage.getItem(VIEW_MODE_KEY) || "normal";
+  applyDisplayMode(savedMode);
+
   restoreSelectedCategory();
   updateQuizSourceLabel("待機中");
 
