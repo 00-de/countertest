@@ -765,6 +765,80 @@ body.easy-mode .badge{
   </div>
 
   <div class="card">
+    <h3>💾 データのバックアップ（再インストール対策）</h3>
+
+    <div class="manualBtnRow">
+      <button class="backupBtn" onclick="exportBackup()">💾 バックアップを保存</button>
+      <button class="subBtn" onclick="triggerImportBackup()">📂 バックアップから復元</button>
+    </div>
+
+    <input type="file" id="backupFile" accept="application/json,.json" style="display:none" onchange="importBackup(event)">
+
+    <div class="badgeRow">
+      <div id="persistBadge" class="badge">🔒 保存領域: 確認中…</div>
+    </div>
+
+    <div class="storageInfo">
+      <b>機種変更・再インストールの前に必ず「保存」してください。</b><br>
+      ① 「💾 バックアップを保存」を押す<br>
+      ② 表示メニューから「ファイル」や「iCloud Drive」に保存<br>
+      ③ 入れ直した後に「📂 バックアップから復元」で読み込む<br>
+      ・日 / 月 / 総 / 御祈念 / 段階演出 / 設定 がすべて戻ります<br>
+      ・保存したファイルはiCloudに置けば機種変更でも引き継げます
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>☁️ クラウド同期（Firebase）</h3>
+
+    <div class="badgeRow">
+      <div id="cloudBadge" class="badge">☁️ 状態: 準備中…</div>
+    </div>
+
+    <div id="cloudLoginBox">
+      メールアドレス
+      <input id="cloudEmail" type="email" autocomplete="username" inputmode="email" placeholder="example@mail.com">
+
+      パスワード（6文字以上）
+      <input id="cloudPassword" type="password" autocomplete="current-password" placeholder="パスワード">
+
+      <div class="manualBtnRow">
+        <button class="startBtn" onclick="cloudLogin()">🔑 ログイン</button>
+        <button class="navBtn" onclick="cloudRegister()">🆕 新規登録</button>
+      </div>
+    </div>
+
+    <div id="cloudUserBox" style="display:none">
+      <div class="storageInfo">
+        ログイン中: <span id="cloudUserEmail"></span>
+      </div>
+      <div class="manualBtnRow">
+        <button class="backupBtn" onclick="cloudPushNow()">⬆️ クラウドへ保存</button>
+        <button class="subBtn" onclick="cloudPullNow()">⬇️ クラウドから取得</button>
+      </div>
+      <button class="resetBtn" onclick="cloudLogout()">🚪 ログアウト</button>
+    </div>
+
+    <div class="storageInfo">
+      ・同じメール／パスワードでログインすれば、再インストール後や別の端末でも同じデータが使えます<br>
+      ・ログイン中は変更が自動でクラウドに保存されます<br>
+      ・未設定の場合この機能はオフのままで、アプリは通常どおり使えます
+    </div>
+
+    <details>
+      <summary>⚙️ 初回のみ必要なFirebase設定</summary>
+      <div class="storageInfo">
+        ① Firebaseでプロジェクトを作成<br>
+        ② Authenticationで「メール／パスワード」を有効化<br>
+        ③ Firestore Database を作成<br>
+        ④ Webアプリの構成（firebaseConfig）を、このHTML下部の設定欄に貼り付け<br>
+        ⑤ Firestoreのセキュリティルールを設定<br>
+        ※ 詳しい手順はチャットの説明をご覧ください
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
     <h3>🌈 段階演出</h3>
     <div id="ach"></div>
   </div>
@@ -1333,24 +1407,51 @@ function getLocalQuiz(){
 
 /* ================= 保存 ================= */
 
+/*
+  クラウド同期との連携用フラグとフック。
+  __suspendCloudSync が true の間は、クラウドへの自動保存をトリガーしない
+  （クラウドから取得したデータを適用する時のループ防止）。
+*/
+let __suspendCloudSync=false;
+
+function getLocalUpdatedAt(){
+  return Number(localStorage.getItem("ddd_local_updated")) || 0;
+}
+
+function setLocalUpdatedAt(n){
+  localStorage.setItem("ddd_local_updated", String(n || 0));
+}
+
+function notifyChange(){
+  if(__suspendCloudSync) return;
+  setLocalUpdatedAt(Date.now());
+  if(typeof window.__onDataChanged === "function"){
+    window.__onDataChanged();
+  }
+}
+
 function save(){
   localStorage.setItem(KEY,JSON.stringify(state));
   idbSet("state",state);
+  notifyChange();
 }
 
 function saveStage(){
   localStorage.setItem(STAGE,JSON.stringify(stage));
   idbSet("stage",stage);
+  notifyChange();
 }
 
 function savePrayerList(list){
   localStorage.setItem(PRAY,JSON.stringify(list));
   idbSet("prayer",list);
+  notifyChange();
 }
 
 function saveAchLog(){
   localStorage.setItem(ACHLOG,JSON.stringify(achLog));
   idbSet("achlog",achLog);
+  notifyChange();
 }
 
 function saveQuizData(){
@@ -1365,6 +1466,7 @@ function saveQuizData(){
     count:count,
     best:quizBest
   });
+  notifyChange();
 }
 
 /* ================= 起動時ロード ================= */
@@ -1901,12 +2003,23 @@ function delPrayer(i){
 
 /* ================= バックアップ ================= */
 
-function exportBackup(){
+/*
+  バックアップ用データを生成。
+  計測中なら現在値を確定（バンク）してから書き出すので、
+  ファイル保存・クラウド保存いずれも正確な値になります。
+*/
+function buildBackupData(){
 
-  const backupData={
+  __suspendCloudSync=true;
+  bankRunningCount();
+  save();
+  __suspendCloudSync=false;
+
+  return {
     app:"DayDreamPlusDX",
-    version:4,
+    version:5,
     exportedAt:nowJST(),
+    updatedAt:getLocalUpdatedAt() || Date.now(),
     state:state,
     stage:stage,
     prayer:getLocalPrayerList(),
@@ -1922,40 +2035,19 @@ function exportBackup(){
       best:quizBest
     }
   };
-
-  const blob=new Blob(
-    [JSON.stringify(backupData,null,2)],
-    {type:"application/json"}
-  );
-
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  const stamp=new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
-
-  a.href=url;
-  a.download=`daydream_backup_${stamp}.json`;
-  a.click();
-
-  setTimeout(()=>{
-    URL.revokeObjectURL(url);
-  },1000);
-
-  add("💾 バックアップ保存完了");
 }
 
-function triggerImportBackup(){
-  document.getElementById("backupFile").click();
-}
+/*
+  バックアップ／クラウドのデータを適用（復元）。
+  クラウド取得時のループを防ぐため、適用中は自動同期を止めます。
+*/
+function applyBackupData(data){
 
-async function importBackup(event){
+  if(!data) return false;
 
-  const file=event.target.files[0];
-  if(!file) return;
+  __suspendCloudSync=true;
 
   try{
-    const text=await file.text();
-    const data=JSON.parse(text);
-
     state=normalizeState(data.state);
     stage=data.stage || {};
     achLog=Array.isArray(data.achLog) ? data.achLog : [];
@@ -1967,6 +2059,11 @@ async function importBackup(event){
     combo=quizData.combo;
     count=quizData.count;
     quizBest=quizData.best;
+
+    // 別端末で計測中だった場合のカウント暴走を防ぐ
+    if(state.running){
+      state.start=Date.now();
+    }
 
     per.value=state.per || 60;
     goal.value=state.goal || 3000;
@@ -1992,6 +2089,100 @@ async function importBackup(event){
     updateQuizUI();
     updateCategoryBadge();
     ui();
+  }finally{
+    __suspendCloudSync=false;
+  }
+
+  return true;
+}
+
+async function exportBackup(){
+
+  const json=JSON.stringify(buildBackupData(),null,2);
+  const stamp=new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
+  const filename=`daydream_backup_${stamp}.json`;
+
+  // iPhoneでは共有メニュー経由で「ファイル」「iCloud Drive」に保存できる
+  try{
+    const file=new File([json],filename,{type:"application/json"});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({
+        files:[file],
+        title:"DayDreamバックアップ"
+      });
+      add("💾 バックアップを保存しました（共有）");
+      return;
+    }
+  }catch(e){
+    // ユーザーがキャンセルした場合はそのまま終了
+    if(e && e.name==="AbortError") return;
+    console.log("share fallback",e);
+  }
+
+  // 共有非対応の場合はダウンロードで保存
+  const blob=new Blob([json],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+
+  a.href=url;
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  setTimeout(()=>{
+    URL.revokeObjectURL(url);
+  },1000);
+
+  add("💾 バックアップ保存完了");
+}
+
+/* 保存領域をできるだけ自動削除されにくくする（永続化要求） */
+async function requestPersistentStorage(){
+
+  const badge=document.getElementById("persistBadge");
+
+  try{
+    if(navigator.storage && navigator.storage.persist){
+
+      let persisted=await navigator.storage.persisted();
+      if(!persisted){
+        persisted=await navigator.storage.persist();
+      }
+
+      if(badge){
+        badge.className=`badge ${persisted ? "online" : "offline"}`;
+        badge.textContent=persisted
+          ? "🔒 保存領域: 永続化ON"
+          : "🔓 保存領域: バックアップ推奨";
+      }
+
+    }else{
+      if(badge){
+        badge.textContent="🔒 保存領域: バックアップ推奨";
+      }
+    }
+  }catch(e){
+    if(badge){
+      badge.textContent="🔒 保存領域: バックアップ推奨";
+    }
+  }
+}
+
+function triggerImportBackup(){
+  document.getElementById("backupFile").click();
+}
+
+async function importBackup(event){
+
+  const file=event.target.files[0];
+  if(!file) return;
+
+  try{
+    const text=await file.text();
+    const data=JSON.parse(text);
+
+    applyBackupData(data);
 
     add("📂 バックアップ復元完了");
 
@@ -2392,9 +2583,260 @@ async function init(){
   updateQuizUI();
   updateClock();
   setInterval(updateClock,1000);
+
+  requestPersistentStorage();
 }
 
+/* ===== クラウド同期（Firebaseモジュール）用ブリッジ ===== */
+window.buildBackupData=buildBackupData;
+window.applyBackupData=applyBackupData;
+window.getLocalUpdatedAt=getLocalUpdatedAt;
+window.setLocalUpdatedAt=setLocalUpdatedAt;
+
 init();
+</script>
+
+<!-- ================= ☁️ クラウド同期（Firebase）モジュール ================= -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  setPersistence,
+  browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+/* ============================================================
+   ▼▼▼ ここにご自分のFirebase設定を貼り付けてください ▼▼▼
+   （Firebaseコンソール → プロジェクトの設定 → マイアプリ → SDK設定と構成）
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyA42Ahwbn5FZbVIsZFblkZCcGAGx6Ldm0E",
+  authDomain: "daydremcounter.firebaseapp.com",
+  projectId: "daydremcounter",
+  storageBucket: "daydremcounter.firebasestorage.app",
+  messagingSenderId: "799263900004",
+  appId: "1:799263900004:web:857ba741d10311bd6f7a71"
+};
+/* ============================================================
+   ▲▲▲ 貼り付けはここまで ▲▲▲
+   ============================================================ */
+
+const cloudBadge=document.getElementById("cloudBadge");
+const cloudLoginBox=document.getElementById("cloudLoginBox");
+const cloudUserBox=document.getElementById("cloudUserBox");
+const cloudUserEmail=document.getElementById("cloudUserEmail");
+
+let auth=null;
+let db=null;
+let currentUser=null;
+let syncTimer=null;
+
+function setBadge(text, kind){
+  if(!cloudBadge) return;
+  cloudBadge.className = "badge" + (kind ? " " + kind : "");
+  cloudBadge.textContent = text;
+}
+
+function isConfigured(){
+  return firebaseConfig.apiKey &&
+         firebaseConfig.apiKey.indexOf("PASTE_") !== 0;
+}
+
+function cloudErrorMessage(e){
+  const code=(e && e.code) ? e.code : "";
+  const map={
+    "auth/invalid-email":"メール形式が正しくありません",
+    "auth/missing-password":"パスワードを入力してください",
+    "auth/weak-password":"パスワードが弱すぎます（6文字以上）",
+    "auth/email-already-in-use":"このメールは登録済みです（ログインしてください）",
+    "auth/invalid-credential":"メールまたはパスワードが違います",
+    "auth/wrong-password":"パスワードが違います",
+    "auth/user-not-found":"ユーザーが見つかりません",
+    "auth/network-request-failed":"通信に失敗しました",
+    "auth/too-many-requests":"試行回数が多すぎます。少し待ってください",
+    "permission-denied":"アクセス権がありません（Firestoreルールを確認）"
+  };
+  return map[code] || code || "不明なエラー";
+}
+
+function userDocRef(uid){
+  return doc(db, "users", uid);
+}
+
+async function pull(uid){
+  const snap=await getDoc(userDocRef(uid));
+  return snap.exists() ? snap.data() : null;
+}
+
+async function push(uid){
+  if(!window.buildBackupData) return false;
+  const data=window.buildBackupData();
+  await setDoc(userDocRef(uid), data);
+  return true;
+}
+
+/* ログイン直後の自動同期：更新時刻が新しい方を採用 */
+async function initialSync(uid){
+  try{
+    setBadge("☁️ 同期中…","online");
+
+    const cloud=await pull(uid);
+    const localUpdated = window.getLocalUpdatedAt ? window.getLocalUpdatedAt() : 0;
+
+    if(!cloud){
+      await push(uid);
+      setBadge("☁️ クラウドに初回保存","online");
+    }else{
+      const cloudUpdated = Number(cloud.updatedAt) || 0;
+
+      if(cloudUpdated > localUpdated){
+        if(window.applyBackupData){
+          window.applyBackupData(cloud);
+          if(window.setLocalUpdatedAt) window.setLocalUpdatedAt(cloudUpdated);
+        }
+        setBadge("☁️ クラウドから取得しました","online");
+      }else{
+        await push(uid);
+        setBadge("☁️ ローカルを保存しました","online");
+      }
+    }
+
+    setTimeout(()=>setBadge("☁️ 状態: ログイン中","online"), 2500);
+  }catch(e){
+    console.log("sync error", e);
+    setBadge("☁️ 同期エラー","offline");
+  }
+}
+
+function startCloud(){
+  try{
+    const app=initializeApp(firebaseConfig);
+    auth=getAuth(app);
+    db=getFirestore(app);
+
+    setPersistence(auth, browserLocalPersistence).catch(()=>{});
+    setBadge("☁️ 状態: 未ログイン");
+
+    onAuthStateChanged(auth, async (user)=>{
+      currentUser=user;
+
+      if(user){
+        if(cloudLoginBox) cloudLoginBox.style.display="none";
+        if(cloudUserBox) cloudUserBox.style.display="block";
+        if(cloudUserEmail) cloudUserEmail.textContent=user.email || "(メール未設定)";
+        setBadge("☁️ 状態: ログイン中","online");
+        await initialSync(user.uid);
+      }else{
+        if(cloudLoginBox) cloudLoginBox.style.display="block";
+        if(cloudUserBox) cloudUserBox.style.display="none";
+        setBadge("☁️ 状態: 未ログイン");
+      }
+    });
+
+  }catch(e){
+    console.log("firebase init error", e);
+    setBadge("☁️ 状態: 初期化エラー","offline");
+  }
+}
+
+/* データ変更時に少し待ってから自動でクラウド保存（連続変更をまとめる） */
+window.__onDataChanged=function(){
+  if(!currentUser || !db) return;
+  if(syncTimer) clearTimeout(syncTimer);
+  syncTimer=setTimeout(async ()=>{
+    try{
+      await push(currentUser.uid);
+      setBadge("☁️ 自動保存しました","online");
+      setTimeout(()=>setBadge("☁️ 状態: ログイン中","online"), 2000);
+    }catch(e){
+      console.log("auto push error", e);
+      setBadge("☁️ 保存エラー","offline");
+    }
+  }, 1500);
+};
+
+window.cloudLogin=async function(){
+  if(!auth){ alert("Firebaseが未設定です（下部の設定欄を確認してください）"); return; }
+  const email=(document.getElementById("cloudEmail")||{}).value || "";
+  const pass=(document.getElementById("cloudPassword")||{}).value || "";
+  if(!email || !pass){ alert("メールとパスワードを入力してください"); return; }
+  try{
+    setBadge("☁️ ログイン中…");
+    await signInWithEmailAndPassword(auth, email.trim(), pass);
+  }catch(e){
+    alert("ログインに失敗しました：" + cloudErrorMessage(e));
+    setBadge("☁️ 状態: 未ログイン");
+  }
+};
+
+window.cloudRegister=async function(){
+  if(!auth){ alert("Firebaseが未設定です（下部の設定欄を確認してください）"); return; }
+  const email=(document.getElementById("cloudEmail")||{}).value || "";
+  const pass=(document.getElementById("cloudPassword")||{}).value || "";
+  if(!email || !pass){ alert("メールとパスワードを入力してください"); return; }
+  if(pass.length<6){ alert("パスワードは6文字以上にしてください"); return; }
+  try{
+    setBadge("☁️ 登録中…");
+    await createUserWithEmailAndPassword(auth, email.trim(), pass);
+  }catch(e){
+    alert("新規登録に失敗しました：" + cloudErrorMessage(e));
+    setBadge("☁️ 状態: 未ログイン");
+  }
+};
+
+window.cloudLogout=async function(){
+  if(!auth) return;
+  try{
+    if(currentUser){ await push(currentUser.uid); }
+  }catch(e){ console.log(e); }
+  try{ await signOut(auth); }catch(e){ console.log(e); }
+};
+
+window.cloudPushNow=async function(){
+  if(!currentUser){ alert("先にログインしてください"); return; }
+  if(!confirm("今この端末のデータで、クラウドを上書きします。よろしいですか？")) return;
+  try{
+    await push(currentUser.uid);
+    alert("クラウドへ保存しました");
+  }catch(e){
+    alert("保存に失敗しました：" + cloudErrorMessage(e));
+  }
+};
+
+window.cloudPullNow=async function(){
+  if(!currentUser){ alert("先にログインしてください"); return; }
+  if(!confirm("クラウドのデータで、この端末のデータを上書きします。よろしいですか？")) return;
+  try{
+    const cloud=await pull(currentUser.uid);
+    if(!cloud){ alert("クラウドにデータがありません"); return; }
+    if(window.applyBackupData){
+      window.applyBackupData(cloud);
+      if(window.setLocalUpdatedAt) window.setLocalUpdatedAt(Number(cloud.updatedAt) || Date.now());
+    }
+    alert("クラウドから取得しました");
+  }catch(e){
+    alert("取得に失敗しました：" + cloudErrorMessage(e));
+  }
+};
+
+/* 未ログインのまま閉じてもボタンが無反応にならないよう保険 */
+if(!window.cloudLogin) window.cloudLogin=function(){ alert("クラウド機能の読み込み中です"); };
+
+if(isConfigured()){
+  startCloud();
+}else{
+  setBadge("☁️ 状態: 未設定（下部の設定欄を確認）","offline");
+}
 </script>
 
 </body>
